@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/MrNinso/ProjetoUnivesp2021-Backend/api"
-	"github.com/MrNinso/ProjetoUnivesp2021-Backend/database"
+	"github.com/MrNinso/ProjetoUnivesp2021-Backend/banco"
 	"github.com/gofiber/fiber/v2"
 	"log"
 	"os"
@@ -12,7 +12,7 @@ import (
 func main() {
 	app := fiber.New()
 
-	db, err := database.NewMysqlConn(
+	db, err := banco.NewMysqlConn(
 		os.Getenv("DATABASE_HOST"),
 		os.Getenv("DATABASE_PORT"),
 		os.Getenv("DATABASE_USERNAME"),
