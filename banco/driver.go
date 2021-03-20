@@ -3,11 +3,11 @@ package banco
 import "github.com/MrNinso/ProjetoUnivesp2021-Backend/objetos"
 
 type DriverBancoDados interface {
-	Login(lid uint, uemail, upassword string) string
+	Login(uemail, upassword string) string
 
 	IsValidToken(uemail, utoken string) (isValid, isAdmin bool)
 
-	Logoff(lid uint, uemail, token string) uint
+	Logoff(uemail, token string) uint
 
 	CadastarUsuario(token string, usuario objetos.Usuario) uint
 

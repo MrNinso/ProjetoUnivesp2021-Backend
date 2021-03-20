@@ -39,7 +39,7 @@ func NewMysqlConn(host, port, username, password, database string) (DriverBancoD
 	return db, err
 }
 
-func (m MysqlDriver) Login(lid uint, uemail, upassword string) string {
+func (m MysqlDriver) Login(uemail, upassword string) string {
 	return "token" //TODO
 }
 
@@ -47,7 +47,7 @@ func (m MysqlDriver) IsValidToken(uemail, utoken string) (isValid, isAdmin bool)
 	return true, true //TODO
 }
 
-func (m MysqlDriver) Logoff(lid uint, uemail, token string) uint {
+func (m MysqlDriver) Logoff(uemail, token string) uint {
 	return 0 //TODO
 }
 

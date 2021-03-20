@@ -15,7 +15,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"lid\": 1,\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}",
+							"raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -43,7 +43,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"lid\":1,\n    \"email\": \"{{email}}\",\n    \"token\": \"{{token}}\"\n}",
+							"raw": "{\n    \"email\": \"{{email}}\",\n    \"token\": \"{{token}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

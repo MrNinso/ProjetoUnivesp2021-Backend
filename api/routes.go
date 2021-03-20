@@ -18,7 +18,6 @@ const (
 func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validate, json *jsoniter.API) {
 	app.Post("/api/v1/login", func(ctx *fiber.Ctx) error {
 		var r struct {
-			LID      uint   `json:"lid" validate:"required"`
 			Email    string `json:"email" validate:"email,required"`
 			Password string `json:"password" validate:"required"`
 		}
@@ -27,7 +26,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 			return ctx.SendStatus(http.StatusBadRequest)
 		}
 
-		if token := db.Login(r.LID, r.Email, r.Password); token != "" {
+		if token := db.Login(r.Email, r.Password); token != "" {
 			return ctx.JSON(fiber.Map{
 				"token": token,
 			})
@@ -38,7 +37,6 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 
 	app.Post("/api/v1/logoff", func(ctx *fiber.Ctx) error {
 		var r struct {
-			LID   uint   `json:"lid" validate:"required"`
 			Email string `json:"email" validate:"email,required"`
 			Token string `json:"token" validate:"alphanum,required"`
 		}
@@ -47,7 +45,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 			return ctx.SendStatus(http.StatusBadRequest)
 		}
 
-		db.Logoff(r.LID, r.Email, r.Token) //TODO STATUS ERROR MAP
+		db.Logoff(r.Email, r.Token) //TODO STATUS ERROR MAP
 
 		return ctx.SendStatus(http.StatusOK)
 	})
