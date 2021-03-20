@@ -2,55 +2,133 @@ package api
 
 import (
 	"github.com/MrNinso/ProjetoUnivesp2021-Backend/banco"
+	"github.com/MrNinso/ProjetoUnivesp2021-Backend/objetos"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	jsoniter "github.com/json-iterator/go"
+	"net/http"
+	"strconv"
 )
 
-func BuildRoutes(app *fiber.App, db *banco.DriverBancoDados) {
-	api := app.Group("/api/v1", func(ctx *fiber.Ctx) error {
-		return nil
+const (
+	TOKEN_HEADER = "token_api"
+	EMAIL_HEADER = "email_api"
+)
+
+func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validate, json *jsoniter.API) {
+	app.Post("/api/v1/login", func(ctx *fiber.Ctx) error {
+		var r struct {
+			LID      uint   `json:"lid" validate:"required"`
+			Email    string `json:"email" validate:"email,required"`
+			Password string `json:"password" validate:"required"`
+		}
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if token := db.Login(r.LID, r.Email, r.Password); token != "" {
+			return ctx.JSON(fiber.Map{
+				"token": token,
+			})
+		}
+
+		return ctx.SendStatus(http.StatusForbidden)
 	})
 
-	api.Post("/usuario/login", func(ctx *fiber.Ctx) error {
-		return nil
+	app.Post("/api/v1/logoff", func(ctx *fiber.Ctx) error {
+		var r struct {
+			LID   uint   `json:"lid" validate:"required"`
+			Email string `json:"email" validate:"email,required"`
+			Token string `json:"token" validate:"alphanum,required"`
+		}
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		db.Logoff(r.LID, r.Email, r.Token) //TODO STATUS ERROR MAP
+
+		return ctx.SendStatus(http.StatusOK)
 	})
 
-	api.Post("/usuario/logoff", func(ctx *fiber.Ctx) error {
-		return nil
+	apiColaborador := app.Group("/api/v1/colaborador", func(ctx *fiber.Ctx) error {
+		if token := ctx.Get(TOKEN_HEADER, "a"); token != "a" {
+			if email := ctx.Get(EMAIL_HEADER, "a"); email != "a" {
+				if valid, _ := db.IsValidToken(email, token); valid {
+					return ctx.Next()
+				}
+			}
+		}
+
+		return ctx.SendStatus(http.StatusForbidden)
 	})
 
-	api.Put("/usuario/cadastrar", func(ctx *fiber.Ctx) error {
-		return nil
+	apiColaborador.Get("/produtos/listar/:page", func(ctx *fiber.Ctx) error {
+		page, err := strconv.Atoi(ctx.Params("page"))
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		token := ctx.Get(TOKEN_HEADER, "a")
+		if token == "a" {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		return ctx.JSON(db.ListarProdutos(token, uint8(page)))
 	})
 
-	api.Post("/usuario/atualizar", func(ctx *fiber.Ctx) error {
-		return nil
+	apiAdministrador := app.Group("/api/v1/administrador", func(ctx *fiber.Ctx) error {
+		if token := ctx.Get(TOKEN_HEADER, "a"); token != "a" {
+			if email := ctx.Get(EMAIL_HEADER, "a"); email != "a" {
+				if valid, admin := db.IsValidToken(email, token); valid && admin {
+					return ctx.Next()
+				}
+			}
+		}
+
+		return ctx.SendStatus(http.StatusForbidden)
 	})
 
-	api.Get("/usuario/listar/:page", func(ctx *fiber.Ctx) error {
-		return nil
+	apiAdministrador.Put("/usuarios/cadastrar", func(ctx *fiber.Ctx) error {
+		var r objetos.Usuario
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.CadastarUsuario(ctx.Get(TOKEN_HEADER), r); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
 	})
 
-	api.Post("/produto/cadastrar", func(ctx *fiber.Ctx) error {
-		return nil
-	})
+	apiAdministrador.Get("/usuarios/listar/:page", func(ctx *fiber.Ctx) error {
+		page, err := strconv.Atoi(ctx.Params("page"))
 
-	api.Post("/produto/atualizar", func(ctx *fiber.Ctx) error {
-		return nil
-	})
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
 
-	api.Get("/produto/listar/:page", func(ctx *fiber.Ctx) error {
-		return nil
-	})
+		token := ctx.Get(TOKEN_HEADER, "a")
+		if token == "a" {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
 
-	api.Post("/ordem/cadastrar", func(ctx *fiber.Ctx) error {
-		return nil
+		return ctx.JSON(db.ListarUsuarios(token, uint8(page)))
 	})
+}
 
-	api.Get("/ordem/listar/:page", func(ctx *fiber.Ctx) error {
-		return nil
-	})
+func getRequest(v *validator.Validate, j jsoniter.API, ctx *fiber.Ctx, r interface{}) error {
+	if err := j.Unmarshal(ctx.Body(), r); err != nil {
+		return err
+	}
 
-	api.Get("/estoque/listar/:page", func(ctx *fiber.Ctx) error {
-		return nil
-	})
+	if err := v.Struct(r); err != nil {
+		return err
+	}
+
+	return nil
 }

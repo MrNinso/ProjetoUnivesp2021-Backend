@@ -5,23 +5,25 @@ import "github.com/MrNinso/ProjetoUnivesp2021-Backend/objetos"
 type DriverBancoDados interface {
 	Login(lid uint, uemail, upassword string) string
 
-	Logoff(uemail, token string) uint
+	IsValidToken(uemail, utoken string) (isValid, isAdmin bool)
 
-	CadastarUsuario(lid uint, tokenAdmin string, usuario objetos.Usuario) uint
+	Logoff(lid uint, uemail, token string) uint
 
-	AtualizarUsuario(lid uint, tokenAdmin string, usuario objetos.Usuario) uint
+	CadastarUsuario(token string, usuario objetos.Usuario) uint
 
-	ListarUsuarios(lid uint, tokenAdmin string) []objetos.Usuario
+	AtualizarUsuario(token string, usuario objetos.Usuario) uint
+
+	ListarUsuarios(token string, page uint8) []objetos.Usuario
 
 	//TODO ADD CRIAR LOJA
 
-	CriarProduto(lid uint, token string, produto objetos.Produto) uint
+	CriarProduto(token string, produto objetos.Produto) uint
 
-	ListarProdutos(lid uint, token string, page uint8) []objetos.Produto
+	ListarProdutos(token string, page uint8) []objetos.Produto
 
-	AtualizarProduto(lid uint, token string, produto objetos.Produto) uint
+	AtualizarProduto(token string, produto objetos.Produto) uint
 
-	RegistrarOrdem(lid uint, token string, ordem objetos.Ordem) uint
+	RegistrarOrdem(token string, ordem objetos.Ordem) uint
 
-	ListarEstoque(lid uint, token string, page uint8) []objetos.ItemEstoque
+	ListarEstoque(token string, page uint8) []objetos.ItemEstoque
 }

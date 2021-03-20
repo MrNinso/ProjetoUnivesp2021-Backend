@@ -1,0 +1,235 @@
+{
+	"info": {
+		"_postman_id": "0bf3dbf3-55d8-472e-9375-2db31be9623c",
+		"name": "API Mercado",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "public",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"lid\": 1,\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"lid\":1,\n    \"email\": \"{{email}}\",\n    \"token\": \"{{token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/logoff",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"logoff"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Colaborador",
+			"item": [
+				{
+					"name": "Produtos",
+					"item": [
+						{
+							"name": "Listar",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token_api",
+										"value": "{{token}}",
+										"type": "text"
+									},
+									{
+										"key": "email_api",
+										"value": "{{email}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/v1/colaborador/produtos/listar/1",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"colaborador",
+										"produtos",
+										"listar",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Administrador",
+			"item": [
+				{
+					"name": "Usuarios",
+					"item": [
+						{
+							"name": "Cadastrar",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token_api",
+										"value": "{{token}}",
+										"type": "text"
+									},
+									{
+										"key": "email_api",
+										"value": "{{email}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"nome\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"isAdmin\": true,\n    \"isAtivado\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/api/v1/administrador/usuarios/cadastrar",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"administrador",
+										"usuarios",
+										"cadastrar"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Listar",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "token_api",
+										"value": "{{token}}",
+										"type": "text"
+									},
+									{
+										"key": "email_api",
+										"value": "{{email}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/v1/administrador/usuarios/listar/1",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"administrador",
+										"usuarios",
+										"listar",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "token"
+		},
+		{
+			"key": "url",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "email",
+			"value": "email@email.com.br"
+		},
+		{
+			"key": "password",
+			"value": "123"
+		}
+	]
+}
