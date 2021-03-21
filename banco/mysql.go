@@ -69,5 +69,5 @@ func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) map[uint
 }
 
 func (m MysqlDriver) MarcarConsulta(utoken string, mid uint64, data time.Time) uint8 {
-	panic("implement me")
+	return 0
 }

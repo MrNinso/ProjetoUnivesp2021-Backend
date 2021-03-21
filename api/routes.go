@@ -77,7 +77,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.SendStatus(http.StatusForbidden)
 	})
 
-	apiUsuario.Get("/especialiadades/:page", func(ctx *fiber.Ctx) error {
+	apiUsuario.Get("/especialidades/:page", func(ctx *fiber.Ctx) error {
 		p, err := strconv.ParseInt(ctx.Params("page"), 10, 8)
 
 		if err != nil {
@@ -91,7 +91,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.JSON(db.ListarEspecialidades(uint8(p)))
 	})
 
-	apiUsuario.Get("/hospital/medico/:eid", func(ctx *fiber.Ctx) error {
+	apiUsuario.Get("/hospital/medicos/:eid", func(ctx *fiber.Ctx) error {
 		eid, err := strconv.ParseUint(ctx.Params("eid"), 10, strconv.IntSize)
 
 		if err != nil {
@@ -142,14 +142,14 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		}
 
 		var r struct {
-			data time.Time
+			Data int64 `json:"data" validate:"unix"`
 		}
 
 		if err = getRequest(v, *json, ctx, &r); err != nil {
 			return ctx.SendStatus(http.StatusBadRequest)
 		}
 
-		if err := db.MarcarConsulta(token, mid, r.data); err != 0 {
+		if err := db.MarcarConsulta(token, mid, time.Unix(r.Data, 0)); err != 0 {
 			return ctx.SendStatus(http.StatusConflict)
 		}
 

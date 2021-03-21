@@ -1,12 +1,12 @@
 {
 	"info": {
 		"_postman_id": "0bf3dbf3-55d8-472e-9375-2db31be9623c",
-		"name": "API Mercado",
+		"name": "API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "public",
+			"name": "publica",
 			"item": [
 				{
 					"name": "Login",
@@ -37,7 +37,7 @@
 					"response": []
 				},
 				{
-					"name": "Logout",
+					"name": "Logoff",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -63,133 +63,183 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Colaborador",
-			"item": [
+				},
 				{
-					"name": "Produtos",
-					"item": [
-						{
-							"name": "Listar",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "token_api",
-										"value": "{{token}}",
-										"type": "text"
-									},
-									{
-										"key": "email_api",
-										"value": "{{email}}",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{url}}/api/v1/colaborador/produtos/listar/1",
-									"host": [
-										"{{url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"colaborador",
-										"produtos",
-										"listar",
-										"1"
-									]
+					"name": "Cadastro Usuario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Um nome\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"cpf\": \"72897695030\",\n    \"uf\": \"SP\",\n    \"cidade\": \"são paulo\",\n    \"cep\": \"04014902\",\n    \"endereco\": \"Rua Domingos de Morais\",\n    \"complemento\": \"770/814\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
-							},
-							"response": []
-						}
-					]
-				}
-			]
-		},
-		{
-			"name": "Administrador",
-			"item": [
-				{
-					"name": "Usuarios",
-					"item": [
-						{
-							"name": "Cadastrar",
-							"request": {
-								"method": "PUT",
-								"header": [
-									{
-										"key": "token_api",
-										"value": "{{token}}",
-										"type": "text"
-									},
-									{
-										"key": "email_api",
-										"value": "{{email}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"name\": \"nome\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"isAdmin\": true,\n    \"isAtivado\": true\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{url}}/api/v1/administrador/usuarios/cadastrar",
-									"host": [
-										"{{url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"administrador",
-										"usuarios",
-										"cadastrar"
-									]
-								}
-							},
-							"response": []
+							}
 						},
-						{
-							"name": "Listar",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "token_api",
-										"value": "{{token}}",
-										"type": "text"
-									},
-									{
-										"key": "email_api",
-										"value": "{{email}}",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{url}}/api/v1/administrador/usuarios/listar/1",
-									"host": [
-										"{{url}}"
-									],
-									"path": [
-										"api",
-										"v1",
-										"administrador",
-										"usuarios",
-										"listar",
-										"1"
-									]
-								}
-							},
-							"response": []
+						"url": {
+							"raw": "{{url}}/api/v1/cadastrar/usuario",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"cadastrar",
+								"usuario"
+							]
 						}
-					]
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usuario",
+			"item": [
+				{
+					"name": "Listar Especialidades",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/especialidades/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"especialidades",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Medicos Por especialiade",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/hospital/medicos/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"hospital",
+								"medicos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Agendamentos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/hospital/agenda/1/listar/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"hospital",
+								"agenda",
+								"1",
+								"listar",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar Consulta",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"data\": 1679427696\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/hospital/agenda/1/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"hospital",
+								"agenda",
+								"1",
+								"add"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

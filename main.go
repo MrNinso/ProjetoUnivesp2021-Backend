@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -98,7 +99,13 @@ func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
 			return false
 		}
 
-		return brdoc.IsCEP(cep)
+		return brdoc.IsCEP(
+			cep,
+			brdoc.AC, brdoc.AL, brdoc.AM, brdoc.AP, brdoc.BA, brdoc.CE, brdoc.DF,
+			brdoc.ES, brdoc.GO, brdoc.MA, brdoc.MG, brdoc.MS, brdoc.MT, brdoc.PA,
+			brdoc.PB, brdoc.PE, brdoc.PI, brdoc.PR, brdoc.RJ, brdoc.RN, brdoc.RO,
+			brdoc.RR, brdoc.RS, brdoc.SC, brdoc.SE, brdoc.SP, brdoc.TO,
+		)
 	}); err != nil {
 		panic(err)
 	}
@@ -111,6 +118,14 @@ func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
 		}
 
 		return strings.Contains(constantes.Estados, uf)
+	}); err != nil {
+		panic(err)
+	}
+
+	if err = v.RegisterValidation("unix", func(fl validator.FieldLevel) bool {
+		unix := fl.Field().Int()
+
+		return time.Now().Unix() < unix
 	}); err != nil {
 		panic(err)
 	}
