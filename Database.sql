@@ -2,6 +2,8 @@ DROP DATABASE ProjetoUnivesp2021;
 
 CREATE DATABASE IF NOT EXISTS ProjetoUnivesp2021;
 
+USE ProjetoUnivesp2021;
+
 -- ProjetoUnivesp2021.HOSPITAL definition
 
 CREATE TABLE `HOSPITAL`
@@ -38,7 +40,9 @@ CREATE TABLE `MEDICOS`
     `EID`      int(10) unsigned    NOT NULL,
     `HID`      int(10) unsigned    NOT NULL,
     `MATIVADO` enum ('T','F','D')  NOT NULL DEFAULT 'T',
-    PRIMARY KEY (`MID`)
+    PRIMARY KEY (`MID`),
+    FOREIGN KEY (`HID`) REFERENCES `HOSPITAL` (`HID`),
+    FOREIGN KEY (`EID`) REFERENCES `ESPECIALIDADES` (`EID`)
 );
 
 -- ProjetoUnivesp2021.USUARIOS definition
@@ -73,5 +77,6 @@ CREATE TABLE `AGENDAMENTOS`
     `ADATA`    datetime            NOT NULL,
     `AATIVADO` enum ('T','D')      NOT NULL DEFAULT 'T',
     PRIMARY KEY (`AID`),
-    UNIQUE KEY `ADATA` (`ADATA`)
+    FOREIGN KEY (`UID`) REFERENCES `USUARIOS` (`UID`),
+    FOREIGN KEY (`MID`) REFERENCES `MEDICOS` (`MID`)
 );
