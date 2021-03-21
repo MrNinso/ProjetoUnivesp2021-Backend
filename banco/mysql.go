@@ -6,6 +6,7 @@ import (
 	"github.com/MrNinso/ProjetoUnivesp2021-Backend/objetos"
 	_ "github.com/go-sql-driver/mysql"
 	"strings"
+	"time"
 )
 
 type MysqlDriver struct {
@@ -39,46 +40,34 @@ func NewMysqlConn(host, port, username, password, database string) (DriverBancoD
 	return db, err
 }
 
+func (m MysqlDriver) CadastarUsuario(usuario objetos.Usuario) uint8 {
+	return 0
+}
+
 func (m MysqlDriver) Login(uemail, upassword string) string {
-	return "token" //TODO
+	return "token"
 }
 
-func (m MysqlDriver) IsValidToken(uemail, utoken string) (isValid, isAdmin bool) {
-	return true, true //TODO
+func (m MysqlDriver) IsValidToken(uemail, utoken string) bool {
+	return true
 }
 
-func (m MysqlDriver) Logoff(uemail, token string) uint {
-	return 0 //TODO
+func (m MysqlDriver) Logoff(uemail, token string) uint8 {
+	return 0
 }
 
-func (m MysqlDriver) CadastarUsuario(token string, usuario objetos.Usuario) uint {
-	return 0 //TODO
+func (m MysqlDriver) ListarEspecialidades(page uint8) map[uint]string {
+	return make(map[uint]string)
 }
 
-func (m MysqlDriver) AtualizarUsuario(token string, usuario objetos.Usuario) uint {
-	return 0 //TODO
+func (m MysqlDriver) ListarMedicoPorEspecialiade(eid uint) []objetos.Medico {
+	return make([]objetos.Medico, 0)
 }
 
-func (m MysqlDriver) ListarUsuarios(token string, page uint8) []objetos.Usuario {
-	return make([]objetos.Usuario, 0) //TODO
+func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) map[uint64]time.Time {
+	return make(map[uint64]time.Time)
 }
 
-func (m MysqlDriver) CriarProduto(token string, produto objetos.Produto) uint {
-	return 0 //TODO
-}
-
-func (m MysqlDriver) ListarProdutos(token string, page uint8) []objetos.Produto {
-	return make([]objetos.Produto, 0) //TODO
-}
-
-func (m MysqlDriver) AtualizarProduto(token string, produto objetos.Produto) uint {
-	return 0 //TODO
-}
-
-func (m MysqlDriver) RegistrarOrdem(token string, ordem objetos.Ordem) uint {
-	return 0 //TODO
-}
-
-func (m MysqlDriver) ListarEstoque(token string, page uint8) []objetos.ItemEstoque {
-	return make([]objetos.ItemEstoque, 0) //TODO
+func (m MysqlDriver) MarcarConsulta(utoken string, mid uint64, data time.Time) uint8 {
+	panic("implement me")
 }

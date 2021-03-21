@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/MrNinso/ProjetoUnivesp2021-Backend/api"
 	"github.com/MrNinso/ProjetoUnivesp2021-Backend/banco"
+	"github.com/MrNinso/ProjetoUnivesp2021-Backend/constantes"
+	"github.com/Nhanderu/brdoc"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	jsoniter "github.com/json-iterator/go"
@@ -75,5 +77,43 @@ func iniciarJson(j *jsoniter.API, w *sync.WaitGroup) {
 }
 
 func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
+	var err error
+
+	if err = v.RegisterValidation("cpf", func(fl validator.FieldLevel) bool {
+		cpf := fl.Field().String()
+
+		if cpf == "" || len(cpf) != 11 {
+			return false
+		}
+
+		return brdoc.IsCPF(cpf)
+	}); err != nil {
+		panic(err)
+	}
+
+	if err = v.RegisterValidation("cep", func(fl validator.FieldLevel) bool {
+		cep := fl.Field().String()
+
+		if cep == "" || len(cep) != 8 {
+			return false
+		}
+
+		return brdoc.IsCEP(cep)
+	}); err != nil {
+		panic(err)
+	}
+
+	if err = v.RegisterValidation("uf", func(fl validator.FieldLevel) bool {
+		uf := fl.Field().String()
+
+		if uf == "" || len(uf) != 2 {
+			return false
+		}
+
+		return strings.Contains(constantes.Estados, uf)
+	}); err != nil {
+		panic(err)
+	}
+
 	w.Done()
 }

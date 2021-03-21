@@ -1,29 +1,25 @@
 package banco
 
-import "github.com/MrNinso/ProjetoUnivesp2021-Backend/objetos"
+import (
+	"github.com/MrNinso/ProjetoUnivesp2021-Backend/objetos"
+	"time"
+)
 
 type DriverBancoDados interface {
+	CadastarUsuario(usuario objetos.Usuario) uint8
+
 	Login(uemail, upassword string) string
 
-	IsValidToken(uemail, utoken string) (isValid, isAdmin bool)
+	IsValidToken(uemail, utoken string) bool
 
-	Logoff(uemail, token string) uint
+	Logoff(uemail, token string) uint8
 
-	CadastarUsuario(token string, usuario objetos.Usuario) uint
+	//Atividades do Usuario
+	ListarEspecialidades(page uint8) map[uint]string
 
-	AtualizarUsuario(token string, usuario objetos.Usuario) uint
+	ListarMedicoPorEspecialiade(eid uint) []objetos.Medico
 
-	ListarUsuarios(token string, page uint8) []objetos.Usuario
+	ListarAgendamentosDoMedico(mid uint64, page uint8) map[uint64]time.Time
 
-	//TODO ADD CRIAR LOJA
-
-	CriarProduto(token string, produto objetos.Produto) uint
-
-	ListarProdutos(token string, page uint8) []objetos.Produto
-
-	AtualizarProduto(token string, produto objetos.Produto) uint
-
-	RegistrarOrdem(token string, ordem objetos.Ordem) uint
-
-	ListarEstoque(token string, page uint8) []objetos.ItemEstoque
+	MarcarConsulta(utoken string, mid uint64, data time.Time) uint8
 }

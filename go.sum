@@ -1,3 +1,5 @@
+github.com/Nhanderu/brdoc v1.1.2 h1:8omuNpCC+9FLhsATdigQxFyhed7sb2TVyJLVxUFDjWg=
+github.com/Nhanderu/brdoc v1.1.2/go.mod h1:UQQw7zlNjQJFSGooYd+uq6QqLQ2G6jAHVaeGAXUgUlk=
 github.com/andybalholm/brotli v1.0.0 h1:7UCwP93aiSfvWpapti8g88vVVGp2qqtGyePsSuDafo4=
 github.com/andybalholm/brotli v1.0.0/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
