@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	jsoniter "github.com/json-iterator/go"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strconv"
 	"time"
@@ -39,7 +40,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 	app.Post("/api/v1/logoff", func(ctx *fiber.Ctx) error {
 		var r struct {
 			Email string `json:"email" validate:"email,required"`
-			Token string `json:"token" validate:"alphanum,required"`
+			Token string `json:"token" validate:"uuid_rfc4122,required"`
 		}
 
 		if err := getRequest(v, *json, ctx, &r); err != nil {
@@ -58,7 +59,15 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 			return ctx.SendStatus(http.StatusBadRequest)
 		}
 
-		if err := db.CadastarUsuario(r); err != 0 {
+		pass, err := bcrypt.GenerateFromPassword([]byte(r.UPASSWORD), bcrypt.DefaultCost)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		r.UPASSWORD = string(pass)
+
+		if e := db.CadastarUsuario(r); e != 0 {
 			return ctx.SendStatus(http.StatusConflict)
 		}
 
@@ -68,8 +77,12 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 	apiUsuario := app.Group("/api/v1/usuario", func(ctx *fiber.Ctx) error {
 		if token := ctx.Get(TOKEN_HEADER, "a"); token != "a" {
 			if email := ctx.Get(EMAIL_HEADER, "a"); email != "a" {
-				if db.IsValidToken(email, token) {
-					return ctx.Next()
+				if err := v.Var(email, "email"); err == nil {
+					if err = v.Var(token, "uuid_rfc4122"); err == nil {
+						if db.IsValidToken(email, token) {
+							return ctx.Next()
+						}
+					}
 				}
 			}
 		}

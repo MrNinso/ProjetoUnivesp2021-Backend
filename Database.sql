@@ -53,7 +53,7 @@ CREATE TABLE `USUARIOS`
     `UNOME`        varchar(255)        NOT NULL,
     `UEMAIL`       varchar(100)        NOT NULL,
     `UPASSWORD`    varchar(80)         NOT NULL,
-    `UTOKEN`       char(16)            NOT NULL,
+    `UTOKEN`       char(36),
     `UCPF`         char(11)            NOT NULL,
     `UUF`          char(2)             NOT NULL,
     `UCIDADE`      varchar(50)         NOT NULL,
@@ -80,3 +80,43 @@ CREATE TABLE `AGENDAMENTOS`
     FOREIGN KEY (`UID`) REFERENCES `USUARIOS` (`UID`),
     FOREIGN KEY (`MID`) REFERENCES `MEDICOS` (`MID`)
 );
+
+-- Get Login Password from email
+
+CREATE PROCEDURE GetLoginUsuario(email VARCHAR(100))
+BEGIN
+    SELECT UPASSWORD FROM USUARIOS WHERE UATIVADO = 'T' AND UEMAIL = email LIMIT 1;
+END;
+
+-- Add a User
+
+CREATE PROCEDURE ProjetoUnivesp2021.AddUsuario(nome VARCHAR(255), email VARCHAR(100),
+                                               password VARCHAR(80), cpf varchar(11),
+                                               uf varchar(2), cidade varchar(50), cep varchar(8),
+                                               endereco varchar(150), complemento varchar(150))
+
+BEGIN
+    INSERT INTO USUARIOS (UNOME, UEMAIL, UPASSWORD, UCPF, UUF, UCIDADE, UCEP, UENDERECO, UCOMPLEMENTO)
+    VALUES (nome, email, password, cpf, uf, cidade, cep, endereco, complemento);
+END;
+
+-- Valida o token de um email
+
+CREATE PROCEDURE ProjetoUnivesp2021.ValidarToken(email varchar(100), token char(36))
+BEGIN
+    SELECT IF(UTOKEN = token, 1, 0) FROM USUARIOS WHERE UEMAIL = email AND UATIVADO = 'T' LIMIT 1;
+END;
+
+-- Atualiza um token de um email
+
+CREATE PROCEDURE ProjetoUnivesp2021.RegistrarToken(email varchar(100), token char(36))
+BEGIN
+    UPDATE USUARIOS SET UTOKEN = token WHERE UEMAIL = email AND UATIVADO = 'T';
+END;
+
+-- Realiza o LogOff
+
+CREATE PROCEDURE ProjetoUnivesp2021.LogOff(email varchar(100), token varchar(36))
+BEGIN
+    UPDATE USUARIOS SET UTOKEN = NULL WHERE UEMAIL = email AND UTOKEN = token AND UATIVADO = 'T';
+END;

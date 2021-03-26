@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"github.com/MrNinso/ProjetoUnivesp2021-Backend/objetos"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"time"
 )
@@ -40,19 +42,100 @@ func NewMysqlConn(host, port, username, password, database string) (DriverBancoD
 	return db, err
 }
 
-func (m MysqlDriver) CadastarUsuario(usuario objetos.Usuario) uint8 {
+func (m MysqlDriver) CadastarUsuario(u objetos.Usuario) uint8 {
+	_, err := m.QueryContext(
+		context.Background(),
+		"CALL AddUsuario(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		u.UNOME, u.UEMAIL, u.UPASSWORD, u.UCPF, u.UUF,
+		u.UCIDADE, u.UCEP, u.UENDERECO, u.UCOMPLEMENTO,
+	)
+
+	if err != nil {
+		return 1
+	}
+
 	return 0
 }
 
 func (m MysqlDriver) Login(uemail, upassword string) string {
-	return "token"
+	r, err := m.QueryContext(
+		context.Background(),
+		"CALL GetLoginUsuario(?)",
+		uemail,
+	)
+
+	if err != nil {
+		return ""
+	}
+
+	if r.Next() {
+		var password string
+		err = r.Scan(&password)
+
+		if err != nil || r.Close() != nil {
+			return ""
+		}
+
+		if err = bcrypt.CompareHashAndPassword([]byte(password), []byte(upassword)); err == nil {
+			token := uuid.NewString()
+
+			_, err = m.QueryContext(
+				context.Background(),
+				"CALL RegistrarToken(?, ?)",
+				uemail, token,
+			)
+
+			if err != nil {
+				return ""
+			}
+
+			return token
+		}
+
+		return ""
+	}
+
+	return ""
 }
 
 func (m MysqlDriver) IsValidToken(uemail, utoken string) bool {
-	return true
+	r, err := m.QueryContext(
+		context.Background(),
+		"CALL ValidarToken(?, ?)",
+		uemail, utoken,
+	)
+
+	defer func() {
+		_ = r.Close()
+	}()
+
+	if err != nil {
+		return false
+	}
+
+	if r.Next() {
+		var i uint8
+		if err = r.Scan(&i); err != nil {
+			return false
+		} else {
+			return i == 1
+		}
+	}
+
+	return false
 }
 
 func (m MysqlDriver) Logoff(uemail, token string) uint8 {
+	_, err := m.QueryContext(
+		context.Background(),
+		"CALL LogOff(? , ?)",
+		uemail, token,
+	)
+
+	if err != nil {
+		return 1
+	}
+
 	return 0
 }
 
