@@ -26,9 +26,9 @@ CREATE TABLE `HOSPITAL`
 CREATE TABLE `ESPECIALIDADES`
 (
     `EID`   int(10) unsigned NOT NULL AUTO_INCREMENT,
-    `HNOME` varchar(30) DEFAULT NULL,
+    `ENOME` varchar(30) DEFAULT NULL,
     PRIMARY KEY (`EID`),
-    UNIQUE KEY `HNOME` (`HNOME`)
+    UNIQUE KEY `ENOME` (`ENOME`)
 );
 
 -- ProjetoUnivesp2021.MEDICOS definition
@@ -113,8 +113,6 @@ CREATE PROCEDURE ProjetoUnivesp2021.RegistrarToken(email varchar(100), token cha
 BEGIN
     UPDATE USUARIOS SET UTOKEN = token WHERE UEMAIL = email AND UATIVADO = 'T';
 END;
-
--- Realiza o LogOff
 
 CREATE PROCEDURE ProjetoUnivesp2021.LogOff(email varchar(100), token varchar(36))
 BEGIN
