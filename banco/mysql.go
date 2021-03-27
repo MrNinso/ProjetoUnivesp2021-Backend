@@ -139,16 +139,16 @@ func (m MysqlDriver) Logoff(uemail, token string) uint8 {
 	return 0
 }
 
-func (m MysqlDriver) ListarEspecialidades(page uint8) map[uint]string {
-	return make(map[uint]string)
+func (m MysqlDriver) ListarEspecialidades(page uint8) []objetos.Especialidade {
+	return make([]objetos.Especialidade, 0)
 }
 
 func (m MysqlDriver) ListarMedicoPorEspecialiade(eid uint) []objetos.Medico {
 	return make([]objetos.Medico, 0)
 }
 
-func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) map[uint64]time.Time {
-	return make(map[uint64]time.Time)
+func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objetos.Agendamento {
+	return make([]objetos.Agendamento, 0)
 }
 
 func (m MysqlDriver) MarcarConsulta(utoken string, mid uint64, data time.Time) uint8 {
