@@ -18,6 +18,28 @@ const (
 )
 
 func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validate, json *jsoniter.API) {
+	app.Post("/api/v1/cadastrar/usuario", func(ctx *fiber.Ctx) error {
+		var r objetos.Usuario
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		pass, err := bcrypt.GenerateFromPassword([]byte(r.UPASSWORD), bcrypt.DefaultCost)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		r.UPASSWORD = string(pass)
+
+		if e := db.CadastarUsuario(r); e != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
 	app.Post("/api/v1/login", func(ctx *fiber.Ctx) error {
 		var r struct {
 			Email    string `json:"email" validate:"email,required"`
@@ -48,28 +70,6 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		}
 
 		db.Logoff(r.Email, r.Token) //TODO STATUS ERROR MAP
-
-		return ctx.SendStatus(http.StatusOK)
-	})
-
-	app.Post("/api/v1/cadastrar/usuario", func(ctx *fiber.Ctx) error {
-		var r objetos.Usuario
-
-		if err := getRequest(v, *json, ctx, &r); err != nil {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		pass, err := bcrypt.GenerateFromPassword([]byte(r.UPASSWORD), bcrypt.DefaultCost)
-
-		if err != nil {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		r.UPASSWORD = string(pass)
-
-		if e := db.CadastarUsuario(r); e != 0 {
-			return ctx.SendStatus(http.StatusConflict)
-		}
 
 		return ctx.SendStatus(http.StatusOK)
 	})

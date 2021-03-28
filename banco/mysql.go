@@ -46,7 +46,7 @@ func NewMysqlConn(host, port, username, password, database string, pageSize uint
 func (m MysqlDriver) CadastarUsuario(u objetos.Usuario) uint8 {
 	_, err := m.QueryContext(
 		context.Background(),
-		"CALL AddUsuario(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		"CALL RegistrarUsuario(?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		u.UNOME, u.UEMAIL, u.UPASSWORD, u.UCPF, u.UUF,
 		u.UCIDADE, u.UCEP, u.UENDERECO, u.UCOMPLEMENTO,
 	)
@@ -210,7 +210,33 @@ func (m MysqlDriver) ListarMedicoPorEspecialiade(eid uint) []objetos.Medico {
 }
 
 func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objetos.Agendamento {
-	return make([]objetos.Agendamento, 0)
+	r, err := m.QueryContext(
+		context.Background(),
+		"CALL ListarAgendamentosMedico(?)",
+		mid,
+	)
+
+	if err != nil {
+		return make([]objetos.Agendamento, 0)
+	}
+
+	defer func() {
+		_ = r.Close()
+	}()
+
+	var list []objetos.Agendamento
+
+	for r.Next() {
+		a := objetos.Agendamento{}
+
+		if err = r.Scan(&a.AID, &a.ADATA); err != nil {
+			return list
+		}
+
+		list = append(list, a)
+	}
+
+	return list
 }
 
 func (m MysqlDriver) MarcarConsulta(utoken string, mid uint64, data time.Time) uint8 {

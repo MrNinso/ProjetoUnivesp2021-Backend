@@ -90,10 +90,10 @@ END;
 
 -- Add a User
 
-CREATE PROCEDURE ProjetoUnivesp2021.AddUsuario(nome VARCHAR(255), email VARCHAR(100),
-                                               password VARCHAR(80), cpf varchar(11),
-                                               uf varchar(2), cidade varchar(50), cep varchar(8),
-                                               endereco varchar(150), complemento varchar(150))
+CREATE PROCEDURE ProjetoUnivesp2021.RegistrarUsuario(nome VARCHAR(255), email VARCHAR(100),
+                                                     password VARCHAR(80), cpf varchar(11),
+                                                     uf varchar(2), cidade varchar(50), cep varchar(8),
+                                                     endereco varchar(150), complemento varchar(150))
 
 BEGIN
     INSERT INTO USUARIOS (UNOME, UEMAIL, UPASSWORD, UCPF, UUF, UCIDADE, UCEP, UENDERECO, UCOMPLEMENTO)
