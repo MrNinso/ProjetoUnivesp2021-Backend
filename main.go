@@ -31,7 +31,7 @@ func main() {
 
 	var pageSize uint8
 
-	if ps := os.Getenv("DATABASE_PAGESIZE"); ps != "" {
+	if ps := os.Getenv("DATABASE_PAGESIZE"); ps != "" { //TODO
 		p, err := strconv.ParseInt(ps, 10, 8)
 
 		if err != nil {
@@ -142,7 +142,7 @@ func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
 	if err = v.RegisterValidation("unix", func(fl validator.FieldLevel) bool {
 		unix := fl.Field().Int()
 
-		return time.Now().Unix() < unix
+		return time.Now().Unix() < unix //TODO ADD MARGEM
 	}); err != nil {
 		panic(err)
 	}

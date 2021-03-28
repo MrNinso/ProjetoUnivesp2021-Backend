@@ -65,13 +65,13 @@ func (m MysqlDriver) Login(uemail, upassword string) string {
 		uemail,
 	)
 
-	defer func() {
-		_ = r.Close()
-	}()
-
 	if err != nil {
 		return ""
 	}
+
+	defer func() {
+		_ = r.Close()
+	}()
 
 	if r.Next() {
 		var password string
@@ -110,13 +110,13 @@ func (m MysqlDriver) IsValidToken(uemail, utoken string) bool {
 		uemail, utoken,
 	)
 
-	defer func() {
-		_ = r.Close()
-	}()
-
 	if err != nil {
 		return false
 	}
+
+	defer func() {
+		_ = r.Close()
+	}()
 
 	if r.Next() {
 		var i uint8
@@ -159,7 +159,6 @@ func (m MysqlDriver) ListarEspecialidades(page uint8) []objetos.Especialidade {
 	}()
 
 	var list []objetos.Especialidade
-	i := 0
 
 	for r.Next() {
 		e := objetos.Especialidade{}
@@ -169,8 +168,6 @@ func (m MysqlDriver) ListarEspecialidades(page uint8) []objetos.Especialidade {
 		}
 
 		list = append(list, e)
-
-		i++
 	}
 
 	return list
@@ -192,7 +189,6 @@ func (m MysqlDriver) ListarMedicoPorEspecialiade(eid uint) []objetos.Medico {
 	}()
 
 	var list []objetos.Medico
-	i := 0
 
 	for r.Next() {
 		M := objetos.Medico{}
@@ -202,8 +198,6 @@ func (m MysqlDriver) ListarMedicoPorEspecialiade(eid uint) []objetos.Medico {
 		}
 
 		list = append(list, M)
-
-		i++
 	}
 
 	return list
@@ -239,10 +233,14 @@ func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objeto
 	return list
 }
 
+func (m MysqlDriver) ListarHospitais(page uint8) []objetos.Hospital {
+	return make([]objetos.Hospital, 0) //TODO++
+}
+
 func (m MysqlDriver) MarcarConsulta(utoken string, mid uint64, data time.Time) uint8 {
 	_, err := m.QueryContext(
 		context.Background(),
-		"CALL RegistrarAgendamento(?, ?, ?)",
+		"CALL RegistrarAgendamento(?, ?, ?)", //TODO GARANTIR LIMITE DE MARCAÇÃO DE CONSULTA
 		utoken, mid, data,
 	)
 

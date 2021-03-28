@@ -6,10 +6,10 @@ type Usuario struct {
 	UEMAIL       string `json:"email" validate:"email,required"`
 	UPASSWORD    string `json:"password" validate:"required"`
 	UTOKEN       string
-	UCPF         string `json:"cpf" validate:"cpf"`
-	UUF          string `json:"uf" validate:"uf"`
+	UCPF         string `json:"cpf" validate:"cpf,required"`
+	UUF          string `json:"uf" validate:"uf,required"`
 	UCIDADE      string `json:"cidade" validate:"required"`
-	UCEP         string `json:"cep" validate:"cep"`
+	UCEP         string `json:"cep" validate:"cep,required"`
 	UENDERECO    string `json:"endereco" validate:"required"`
 	UCOMPLEMENTO string `json:"complemento"`
 	UATIVADO     bool
