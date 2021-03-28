@@ -13,9 +13,10 @@ import (
 
 type MysqlDriver struct {
 	*sql.Conn
+	pageSize uint8
 }
 
-func NewMysqlConn(host, port, username, password, database string) (DriverBancoDados, error) {
+func NewMysqlConn(host, port, username, password, database string, pageSize uint8) (DriverBancoDados, error) {
 	var connString strings.Builder
 
 	//username:password@tcp(host:port)/database
@@ -37,7 +38,7 @@ func NewMysqlConn(host, port, username, password, database string) (DriverBancoD
 
 	conn, err := d.Conn(context.Background())
 
-	db := &MysqlDriver{conn}
+	db := &MysqlDriver{conn, pageSize}
 
 	return db, err
 }
@@ -63,6 +64,10 @@ func (m MysqlDriver) Login(uemail, upassword string) string {
 		"CALL GetLoginUsuario(?)",
 		uemail,
 	)
+
+	defer func() {
+		_ = r.Close()
+	}()
 
 	if err != nil {
 		return ""
@@ -140,11 +145,68 @@ func (m MysqlDriver) Logoff(uemail, token string) uint8 {
 }
 
 func (m MysqlDriver) ListarEspecialidades(page uint8) []objetos.Especialidade {
-	return make([]objetos.Especialidade, 0)
+	r, err := m.QueryContext(
+		context.Background(),
+		"CALL ListarEspecialidades()",
+	)
+
+	if err != nil {
+		return make([]objetos.Especialidade, 0)
+	}
+
+	defer func() {
+		_ = r.Close()
+	}()
+
+	var list []objetos.Especialidade
+	i := 0
+
+	for r.Next() {
+		e := objetos.Especialidade{}
+
+		if err = r.Scan(&e.EID, &e.ENome); err != nil {
+			return list
+		}
+
+		list = append(list, e)
+
+		i++
+	}
+
+	return list
 }
 
 func (m MysqlDriver) ListarMedicoPorEspecialiade(eid uint) []objetos.Medico {
-	return make([]objetos.Medico, 0)
+	r, err := m.QueryContext(
+		context.Background(),
+		"CALL ListarMedicosPorEspecialidade(?)",
+		eid,
+	)
+
+	if err != nil {
+		return make([]objetos.Medico, 0)
+	}
+
+	defer func() {
+		_ = r.Close()
+	}()
+
+	var list []objetos.Medico
+	i := 0
+
+	for r.Next() {
+		M := objetos.Medico{}
+
+		if err = r.Scan(&M.MID, &M.HID, &M.MNOME); err != nil {
+			return list
+		}
+
+		list = append(list, M)
+
+		i++
+	}
+
+	return list
 }
 
 func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objetos.Agendamento {
@@ -152,5 +214,58 @@ func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objeto
 }
 
 func (m MysqlDriver) MarcarConsulta(utoken string, mid uint64, data time.Time) uint8 {
+	_, err := m.QueryContext(
+		context.Background(),
+		"CALL RegistrarAgendamento(?, ?, ?)",
+		utoken, mid, data,
+	)
+
+	if err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+func (m MysqlDriver) AdicionarHospital(hospital objetos.Hospital) uint8 {
+	_, err := m.QueryContext(
+		context.Background(),
+		"CALL RegistrarHospital(?, ?, ?, ?, ?, ?, ?, ?)",
+		hospital.HNOME, hospital.HUF, hospital.HCIDADE, hospital.HCEP,
+		hospital.HENDERECO, hospital.HCOMPLEMENTO, hospital.HTELEFONE, hospital.HISPRONTOSOCORRO,
+	)
+
+	if err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+func (m MysqlDriver) AdicionarMedico(medico objetos.Medico) uint8 {
+	_, err := m.QueryContext(
+		context.Background(),
+		"CALL RegistrarMedico(?, ?, ?)",
+		medico.HID, medico.EID, medico.MNOME,
+	)
+
+	if err != nil {
+		return 1
+	}
+
+	return 0
+}
+
+func (m MysqlDriver) AdicionarEspecialidade(nome string) uint8 {
+	_, err := m.QueryContext(
+		context.Background(),
+		"CALL RegistrarEspecialidade(?)",
+		nome,
+	)
+
+	if err != nil {
+		return 1
+	}
+
 	return 0
 }

@@ -6,13 +6,13 @@ USE ProjetoUnivesp2021;
 
 -- ProjetoUnivesp2021.HOSPITAL definition
 
-CREATE TABLE `HOSPITAL`
+CREATE TABLE `HOSPITAIS`
 (
     `HID`              int(10) unsigned    NOT NULL AUTO_INCREMENT,
     `HNOME`            varchar(255)        NOT NULL,
     `HUF`              char(2)             NOT NULL,
     `HCIDADE`          varchar(50)         NOT NULL,
-    `HCEP`             varchar(8)          NOT NULL,
+    `HCEP`             char(8)             NOT NULL,
     `HENDERECO`        varchar(150)        NOT NULL,
     `HCOMPLEMENTO`     varchar(150)                 DEFAULT NULL,
     `HTELEFONE`        bigint(14) unsigned NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE `MEDICOS`
     `HID`      int(10) unsigned    NOT NULL,
     `MATIVADO` enum ('T','F','D')  NOT NULL DEFAULT 'T',
     PRIMARY KEY (`MID`),
-    FOREIGN KEY (`HID`) REFERENCES `HOSPITAL` (`HID`),
+    FOREIGN KEY (`HID`) REFERENCES `HOSPITAIS` (`HID`),
     FOREIGN KEY (`EID`) REFERENCES `ESPECIALIDADES` (`EID`)
 );
 
@@ -114,7 +114,71 @@ BEGIN
     UPDATE USUARIOS SET UTOKEN = token WHERE UEMAIL = email AND UATIVADO = 'T';
 END;
 
+-- Seta como NULL o token do usuario
+
 CREATE PROCEDURE ProjetoUnivesp2021.LogOff(email varchar(100), token varchar(36))
 BEGIN
     UPDATE USUARIOS SET UTOKEN = NULL WHERE UEMAIL = email AND UTOKEN = token AND UATIVADO = 'T';
+END;
+
+-- Adiciona uma especialidade no banco
+
+CREATE PROCEDURE ProjetoUnivesp2021.RegistrarEspecialidade(nome varchar(30))
+BEGIN
+    INSERT INTO ESPECIALIDADES (ENOME) VALUES (nome);
+END;
+
+-- Lista especialidades da pagina pageNum
+
+CREATE PROCEDURE ProjetoUnivesp2021.ListarEspecialidades()
+BEGIN
+    SELECT EID, ENOME FROM ESPECIALIDADES;
+END;
+
+-- Cadastra Um hospital
+
+CREATE PROCEDURE ProjetoUnivesp2021.RegistrarHospital(
+    nome varchar(255), uf char(2), cidade varchar(50),
+    cep char(8), endereco varchar(150), complemento varchar(150),
+    telefone bigint(14), isProntoSocorro tinyint(1))
+BEGIN
+    INSERT INTO HOSPITAIS (HNOME, HUF, HCIDADE, HCEP, HENDERECO, HCOMPLEMENTO, HTELEFONE, HISPRONTOSOCORRO)
+    VALUES (nome, uf, cidade, cep, endereco, complemento, telefone, isProntoSocorro);
+END;
+
+-- Lista Hospitais da pagina pageNum
+
+CREATE PROCEDURE ProjetoUnivesp2021.ListarHospitais(pageNum tinyint, pageSize tinyint)
+BEGIN
+    DECLARE SKIP_ITENS TINYINT DEFAULT 0;
+    SET @SKIP_ITENS = sum(pageNum * pageSize);
+    SELECT HID, HNOME, HUF, HCIDADE, HCEP, HENDERECO, HCOMPLEMENTO, HTELEFONE, HISPRONTOSOCORRO
+    FROM HOSPITAIS WHERE HATIVADO = 'T' LIMIT pageSize OFFSET SKIP_ITENS;
+END;
+
+-- Registra medico em um hospital
+
+CREATE PROCEDURE ProjetoUnivesp2021.RegistrarMedico(phid int(10), peid int(10), nome varchar(255))
+BEGIN
+    INSERT INTO MEDICOS (`MNOME`, `EID`, `HID`) VALUES (nome, peid, phid);
+END;
+
+-- Lista Medicos por especialidade
+
+CREATE PROCEDURE ProjetoUnivesp2021.ListarMedicosPorEspecialidade(peid int(10))
+BEGIN
+    SELECT MID, HID, MNOME FROM MEDICOS WHERE EID = peid AND MATIVADO = 'T';
+END;
+
+-- Lista Agendamentos de um medico
+
+CREATE PROCEDURE ProjetoUnivesp2021.ListarAgendamentosMedico(pmid bigint(20))
+BEGIN
+    SELECT ADATA FROM AGENDAMENTOS WHERE MID = pmid AND AATIVADO = 'T' AND ADATA >= DATE(NOW());
+END;
+
+CREATE PROCEDURE ProjetoUnivesp2021.RegistrarAgendamento(token char(36), pmid bigint(20), padata datetime)
+BEGIN
+    INSERT INTO AGENDAMENTOS (UID, MID, ADATA)
+    SELECT UID, pmid, padata FROM USUARIOS WHERE UATIVADO = 'T' AND UTOKEN = token;
 END;

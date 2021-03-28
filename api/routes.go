@@ -168,6 +168,54 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 
 		return ctx.SendStatus(http.StatusOK)
 	})
+
+	apiAdministrativa := app.Group("/api/v1/adm", func(ctx *fiber.Ctx) error {
+		return ctx.Next() //TODO++ SUPER AUTENTICAÇÃO
+	})
+
+	apiAdministrativa.Put("/hospital/add", func(ctx *fiber.Ctx) error {
+		var r objetos.Hospital
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.AdicionarHospital(r); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiAdministrativa.Put("/hospital/medico/add", func(ctx *fiber.Ctx) error {
+		var r objetos.Medico
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.AdicionarMedico(r); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiAdministrativa.Put("/especialidades/add", func(ctx *fiber.Ctx) error {
+		var r struct {
+			Nome string `json:"nome"`
+		}
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.AdicionarEspecialidade(r.Nome); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
 }
 
 func getRequest(v *validator.Validate, j jsoniter.API, ctx *fiber.Ctx, r interface{}) error {

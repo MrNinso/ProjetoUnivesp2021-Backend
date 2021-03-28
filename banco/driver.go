@@ -22,4 +22,11 @@ type DriverBancoDados interface {
 	ListarAgendamentosDoMedico(mid uint64, page uint8) []objetos.Agendamento
 
 	MarcarConsulta(utoken string, mid uint64, data time.Time) uint8
+
+	//Atividades Administrativas
+	AdicionarHospital(hospital objetos.Hospital) uint8
+
+	AdicionarMedico(medico objetos.Medico) uint8
+
+	AdicionarEspecialidade(especialidade string) uint8
 }

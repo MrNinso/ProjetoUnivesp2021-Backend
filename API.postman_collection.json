@@ -10,6 +10,23 @@
 			"item": [
 				{
 					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Realiza o Login\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.not.eql(\"\")",
+									"",
+									"    // Seta o token para as outras requests",
+									"    pm.collectionVariables.set(\"token\", jsonData.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -38,6 +55,23 @@
 				},
 				{
 					"name": "Logoff",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -66,12 +100,85 @@
 				},
 				{
 					"name": "Cadastro Usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Realiza o cadastro\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//FONTE https://pt.stackoverflow.com/questions/244457/gerador-de-cpf-em-javascript",
+									"",
+									"function gerarCpf() {",
+									"  const num1 = aleatorio(); //aleatorio já devolve string, logo não precisa de toString",
+									"  const num2 = aleatorio();",
+									"  const num3 = aleatorio();",
+									"",
+									"  const dig1 = dig(num1, num2, num3); //agora só uma função dig",
+									"  const dig2 = dig(num1, num2, num3, dig1); //mesma função dig aqui",
+									"",
+									"  //aqui com interpolação de strings fica bem mais legivel",
+									"  return `${num1}${num2}${num3}${dig1}${dig2}`;",
+									"}",
+									"",
+									"//o quarto parametro(n4) só será recebido para o segundo digito",
+									"function dig(n1, n2, n3, n4) { ",
+									"  ",
+									"  //as concatenações todas juntas uma vez que são curtas e legíveis",
+									"  let nums = n1.split(\"\").concat(n2.split(\"\"), n3.split(\"\"));",
+									"  ",
+									"  if (n4 !== undefined){ //se for o segundo digito coloca o n4 no sitio certo",
+									"    nums[9] = n4;",
+									"  }",
+									"  ",
+									"  let x = 0;",
+									"   ",
+									"  //o j é também iniciado e incrementado no for para aproveitar a própria sintaxe dele",
+									"  //o i tem inicios diferentes consoante é 1º ou 2º digito verificador",
+									"  for (let i = (n4 !== undefined ? 11:10), j = 0; i >= 2; i--, j++) {",
+									"    x += parseInt(nums[j]) * i;",
+									"  }",
+									"  ",
+									"  const y = x % 11;",
+									"  //ternário aqui pois ambos os retornos são simples e continua legivel",
+									"  return y < 2 ? 0 : 11 - y; ",
+									"}",
+									"",
+									"function aleatorio() {",
+									"  const aleat = Math.floor(Math.random() * 999);",
+									" //o preenchimento dos zeros à esquerda é mais facil com a função padStart da string",
+									"  return (\"\" + aleat).padStart(3, '0'); ",
+									"}",
+									"",
+									"pm.collectionVariables.set(\"cpf\", gerarCpf());",
+									"",
+									"const uuid = Math.random().toString(36).substring(2, 15) +",
+									"        Math.random().toString(36).substring(2, 15);",
+									"const email = \"user_\" + uuid + \"@myDomain.com\";",
+									"",
+									"pm.collectionVariables.set(\"email\", email);",
+									"pm.collectionVariables.set(\"password\", uuid);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Um nome\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"cpf\": \"72897695030\",\n    \"uf\": \"SP\",\n    \"cidade\": \"são paulo\",\n    \"cep\": \"04014902\",\n    \"endereco\": \"Rua Domingos de Morais\",\n    \"complemento\": \"770/814\"\n}",
+							"raw": "{\n    \"nome\": \"{{$randomFullName}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"cpf\": \"{{cpf}}\",\n    \"uf\": \"SP\",\n    \"cidade\": \"são paulo\",\n    \"cep\": \"04014902\",\n    \"endereco\": \"{{$randomStreetAddress}}\",\n    \"complemento\": \"770/814\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -100,6 +207,23 @@
 			"item": [
 				{
 					"name": "Listar Especialidades",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -132,6 +256,23 @@
 				},
 				{
 					"name": "Listar Medicos Por especialiade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -165,6 +306,23 @@
 				},
 				{
 					"name": "Listar Agendamentos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -200,6 +358,23 @@
 				},
 				{
 					"name": "Marcar Consulta",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -242,6 +417,136 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Administrativa",
+			"item": [
+				{
+					"name": "Cadastrar Hospital",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Hospital {{$randomFirstName}}\",\n    \"uf\": \"SP\",\n    \"cidade\": \"Franco da Rocha\",\n    \"cep\": \"48003174\",\n    \"endereco\": \"{{$randomStreetAddress}}\",\n    \"complemento\": null,\n    \"telefone\": 33368200,\n    \"isProntoSocorro\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/adm/hospital/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"adm",
+								"hospital",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar Medico",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Dr. {{$randomFullName}}\",\n    \"eid\": 1,\n    \"hid\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/adm/hospital/medico/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"adm",
+								"hospital",
+								"medico",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar Especialidade",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"{{$randomVerb}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/adm/especialidades/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"adm",
+								"especialidades",
+								"add"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -275,11 +580,15 @@
 		},
 		{
 			"key": "email",
-			"value": "email@email.com.br"
+			"value": ""
 		},
 		{
 			"key": "password",
-			"value": "123"
+			"value": ""
+		},
+		{
+			"key": "cpf",
+			"value": ""
 		}
 	]
 }
