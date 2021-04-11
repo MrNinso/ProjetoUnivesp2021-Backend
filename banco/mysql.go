@@ -29,6 +29,7 @@ func NewMysqlConn(host, port, username, password, database string, pageSize uint
 	connString.WriteString(port)
 	connString.WriteString(")/")
 	connString.WriteString(database)
+	connString.WriteString("?parseTime=true")
 
 	d, err := sql.Open("mysql", connString.String())
 
@@ -223,7 +224,7 @@ func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objeto
 	for r.Next() {
 		a := objetos.Agendamento{}
 
-		if err = r.Scan(&a.AID, &a.ADATA); err != nil {
+		if err = r.Scan(&a.ADATA); err != nil {
 			return list
 		}
 
