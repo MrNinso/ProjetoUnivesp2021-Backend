@@ -1,7 +1,7 @@
 package objetos
 
 type Hospital struct {
-	HID              int
+	HID              int    `json:"hid"`
 	HNOME            string `json:"nome" validate:"required"`
 	HUF              string `json:"uf" validate:"uf"`
 	HCIDADE          string `json:"cidade" validate:"required"`
@@ -10,5 +10,5 @@ type Hospital struct {
 	HCOMPLEMENTO     string `json:"complemento"`
 	HTELEFONE        uint64 `json:"telefone" validate:"required"`
 	HISPRONTOSOCORRO bool   `json:"isProntoSocorro"`
-	HATIVADO         bool
+	HATIVADO         bool   `json:",omitempty"`
 }

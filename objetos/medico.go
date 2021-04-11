@@ -5,5 +5,5 @@ type Medico struct {
 	MNOME    string `json:"nome" validate:"required"`
 	EID      uint   `json:"eid"  validate:"required"`
 	HID      uint   `json:"hid"  validate:"required"`
-	MATIVADO bool
+	MATIVADO bool   `json:",omitempty"`
 }
