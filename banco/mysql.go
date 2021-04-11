@@ -234,7 +234,34 @@ func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objeto
 }
 
 func (m MysqlDriver) ListarHospitais(page uint8) []objetos.Hospital {
-	return make([]objetos.Hospital, 0) //TODO++
+	r, err := m.QueryContext(
+		context.Background(),
+		"CALL ListarHospitais(0,0)",
+	)
+
+	if err != nil {
+		return make([]objetos.Hospital, 0)
+	}
+
+	defer func() {
+		_ = r.Close()
+	}()
+
+	var list []objetos.Hospital
+
+	for r.Next() {
+		h := objetos.Hospital{}
+
+		if err = r.Scan(&h.HID, &h.HNOME, &h.HUF, &h.HCIDADE, &h.HCEP,
+			&h.HENDERECO, &h.HCOMPLEMENTO, &h.HTELEFONE, &h.HISPRONTOSOCORRO,
+		); err != nil {
+			return list
+		}
+
+		list = append(list, h)
+	}
+
+	return list
 }
 
 func (m MysqlDriver) MarcarConsulta(utoken string, mid uint64, data time.Time) uint8 {

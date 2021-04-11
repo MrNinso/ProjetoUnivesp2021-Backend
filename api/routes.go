@@ -104,6 +104,20 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.JSON(db.ListarEspecialidades(uint8(p)))
 	})
 
+	apiUsuario.Get("/hospitais/:page", func(ctx *fiber.Ctx) error {
+		p, err := strconv.ParseInt(ctx.Params("page"), 10, 8)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if p < 0 {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		return ctx.JSON(db.ListarHospitais(uint8(p)))
+	})
+
 	apiUsuario.Get("/hospital/medicos/:eid", func(ctx *fiber.Ctx) error {
 		eid, err := strconv.ParseUint(ctx.Params("eid"), 10, strconv.IntSize)
 
