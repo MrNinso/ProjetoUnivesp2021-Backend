@@ -10,7 +10,7 @@ type DriverBancoDados interface {
 
 	Login(uemail, upassword string) string
 
-	IsValidToken(uemail, utoken string) bool
+	IsValidToken(uemail, utoken string) (bool, string)
 
 	Logoff(uemail, token string) uint8
 

@@ -79,7 +79,8 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 			if email := ctx.Get(EMAIL_HEADER, "a"); email != "a" {
 				if err := v.Var(email, "email"); err == nil {
 					if err = v.Var(token, "uuid_rfc4122"); err == nil {
-						if db.IsValidToken(email, token) {
+						if valido, t := db.IsValidToken(email, token); valido {
+							ctx.Set(TOKEN_HEADER, t)
 							return ctx.Next()
 						}
 					}

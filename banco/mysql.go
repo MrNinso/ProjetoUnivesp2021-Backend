@@ -104,7 +104,7 @@ func (m MysqlDriver) Login(uemail, upassword string) string {
 	return ""
 }
 
-func (m MysqlDriver) IsValidToken(uemail, utoken string) bool {
+func (m MysqlDriver) IsValidToken(uemail, utoken string) (bool, string) {
 	r, err := m.QueryContext(
 		context.Background(),
 		"CALL ValidarToken(?, ?)",
@@ -112,7 +112,7 @@ func (m MysqlDriver) IsValidToken(uemail, utoken string) bool {
 	)
 
 	if err != nil {
-		return false
+		return false,""
 	}
 
 	defer func() {
@@ -122,13 +122,25 @@ func (m MysqlDriver) IsValidToken(uemail, utoken string) bool {
 	if r.Next() {
 		var i uint8
 		if err = r.Scan(&i); err != nil {
-			return false
+			return false, ""
 		} else {
-			return i == 1
+			if i == 1 {
+				token := uuid.NewString()
+				_ = r.Close()
+				r, err = m.QueryContext(
+					context.Background(),
+					"CALL RegistrarToken(?, ?)",
+					uemail, token,
+				)
+
+				return true, token
+			}
+
+			return false, ""
 		}
 	}
 
-	return false
+	return false, ""
 }
 
 func (m MysqlDriver) Logoff(uemail, token string) uint8 {
