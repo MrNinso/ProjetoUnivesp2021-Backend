@@ -15,13 +15,13 @@ type DriverBancoDados interface {
 	Logoff(uemail, token string) uint8
 
 	//Atividades do Usuario
-	ListarEspecialidades(page uint8) []objetos.Especialidade
+	ListarEspecialidades() []objetos.Especialidade
 
 	ListarMedicoPorEspecialiade(eid uint) []objetos.Medico
 
-	ListarAgendamentosDoMedico(mid uint64, page uint8) []objetos.Agendamento
+	ListarAgendamentosDoMedico(mid uint64) []objetos.Agendamento
 
-	ListarHospitais(page uint8) []objetos.Hospital
+	ListarHospitais() []objetos.Hospital
 
 	MarcarConsulta(utoken string, mid uint64, data time.Time) uint8
 

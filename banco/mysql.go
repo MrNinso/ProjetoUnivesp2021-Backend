@@ -13,10 +13,9 @@ import (
 
 type MysqlDriver struct {
 	*sql.Conn
-	pageSize uint8
 }
 
-func NewMysqlConn(host, port, username, password, database string, pageSize uint8) (DriverBancoDados, error) {
+func NewMysqlConn(host, port, username, password, database string) (DriverBancoDados, error) {
 	var connString strings.Builder
 
 	//username:password@tcp(host:port)/database
@@ -39,9 +38,7 @@ func NewMysqlConn(host, port, username, password, database string, pageSize uint
 
 	conn, err := d.Conn(context.Background())
 
-	db := &MysqlDriver{conn, pageSize}
-
-	return db, err
+	return &MysqlDriver{conn}, err
 }
 
 func (m MysqlDriver) CadastarUsuario(u objetos.Usuario) uint8 {
@@ -157,7 +154,7 @@ func (m MysqlDriver) Logoff(uemail, token string) uint8 {
 	return 0
 }
 
-func (m MysqlDriver) ListarEspecialidades(page uint8) []objetos.Especialidade {
+func (m MysqlDriver) ListarEspecialidades() []objetos.Especialidade {
 	r, err := m.QueryContext(
 		context.Background(),
 		"CALL ListarEspecialidades()",
@@ -216,7 +213,7 @@ func (m MysqlDriver) ListarMedicoPorEspecialiade(eid uint) []objetos.Medico {
 	return list
 }
 
-func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objetos.Agendamento {
+func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64) []objetos.Agendamento {
 	r, err := m.QueryContext(
 		context.Background(),
 		"CALL ListarAgendamentosMedico(?)",
@@ -246,10 +243,10 @@ func (m MysqlDriver) ListarAgendamentosDoMedico(mid uint64, page uint8) []objeto
 	return list
 }
 
-func (m MysqlDriver) ListarHospitais(page uint8) []objetos.Hospital {
+func (m MysqlDriver) ListarHospitais() []objetos.Hospital {
 	r, err := m.QueryContext(
 		context.Background(),
-		"CALL ListarHospitais(0,0)",
+		"CALL ListarHospitais()",
 	)
 
 	if err != nil {

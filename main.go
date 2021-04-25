@@ -10,7 +10,6 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -29,28 +28,12 @@ func main() {
 	go iniciarValidate(v, &w)
 	go iniciarJson(&j, &w)
 
-	var pageSize uint8
-
-	if ps := os.Getenv("DATABASE_PAGESIZE"); ps != "" { //TODO
-		p, err := strconv.ParseInt(ps, 10, 8)
-
-		if err != nil {
-			log.Println("DATABASE_PAGESIZE not valid setting 50")
-			pageSize = 50
-		} else {
-			pageSize = uint8(p)
-		}
-	} else {
-		pageSize = 50
-	}
-
 	db, err := banco.NewMysqlConn(
 		os.Getenv("DATABASE_HOST"),
 		os.Getenv("DATABASE_PORT"),
 		os.Getenv("DATABASE_USERNAME"),
 		os.Getenv("DATABASE_PASSWORD"),
 		os.Getenv("DATABASE_NAME"),
-		pageSize,
 	)
 
 	if err != nil {

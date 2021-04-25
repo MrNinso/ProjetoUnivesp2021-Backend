@@ -91,32 +91,12 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.SendStatus(http.StatusForbidden)
 	})
 
-	apiUsuario.Get("/especialidades/:page", func(ctx *fiber.Ctx) error {
-		p, err := strconv.ParseInt(ctx.Params("page"), 10, 8)
-
-		if err != nil {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		if p < 0 {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		return ctx.JSON(db.ListarEspecialidades(uint8(p)))
+	apiUsuario.Get("/especialidades", func(ctx *fiber.Ctx) error {
+		return ctx.JSON(db.ListarEspecialidades())
 	})
 
-	apiUsuario.Get("/hospitais/:page", func(ctx *fiber.Ctx) error {
-		p, err := strconv.ParseInt(ctx.Params("page"), 10, 8)
-
-		if err != nil {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		if p < 0 {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		return ctx.JSON(db.ListarHospitais(uint8(p)))
+	apiUsuario.Get("/hospitais", func(ctx *fiber.Ctx) error {
+		return ctx.JSON(db.ListarHospitais())
 	})
 
 	apiUsuario.Get("/hospital/medicos/:eid", func(ctx *fiber.Ctx) error {
@@ -133,7 +113,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.JSON(db.ListarMedicoPorEspecialiade(uint(eid)))
 	})
 
-	apiUsuario.Get("/hospital/agenda/:medico/listar/:page", func(ctx *fiber.Ctx) error {
+	apiUsuario.Get("/hospital/agenda/:medico/listar", func(ctx *fiber.Ctx) error {
 		mid, err := strconv.ParseUint(ctx.Params("medico"), 10, 64)
 
 		if err != nil {
@@ -144,17 +124,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 			return ctx.SendStatus(http.StatusBadRequest)
 		}
 
-		p, err := strconv.ParseInt(ctx.Params("page"), 10, 8)
-
-		if err != nil {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		if p < 0 {
-			return ctx.SendStatus(http.StatusBadRequest)
-		}
-
-		return ctx.JSON(db.ListarAgendamentosDoMedico(mid, uint8(p)))
+		return ctx.JSON(db.ListarAgendamentosDoMedico(mid))
 	})
 
 	apiUsuario.Put("/hospital/agenda/:medico/add", func(ctx *fiber.Ctx) error {

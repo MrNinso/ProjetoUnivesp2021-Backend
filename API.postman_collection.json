@@ -246,7 +246,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/api/v1/usuario/especialidades/1",
+							"raw": "{{url}}/api/v1/usuario/especialidades",
 							"host": [
 								"{{url}}"
 							],
@@ -254,8 +254,7 @@
 								"api",
 								"v1",
 								"usuario",
-								"especialidades",
-								"1"
+								"especialidades"
 							]
 						}
 					},
@@ -302,7 +301,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/api/v1/usuario/hospitais/1",
+							"raw": "{{url}}/api/v1/usuario/hospitais",
 							"host": [
 								"{{url}}"
 							],
@@ -310,8 +309,7 @@
 								"api",
 								"v1",
 								"usuario",
-								"hospitais",
-								"1"
+								"hospitais"
 							]
 						}
 					},
@@ -358,7 +356,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/api/v1/usuario/hospital/medicos/1",
+							"raw": "{{url}}/api/v1/usuario/hospital/medicos",
 							"host": [
 								"{{url}}"
 							],
@@ -367,8 +365,7 @@
 								"v1",
 								"usuario",
 								"hospital",
-								"medicos",
-								"1"
+								"medicos"
 							]
 						}
 					},
@@ -415,7 +412,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/api/v1/usuario/hospital/agenda/1/listar/1",
+							"raw": "{{url}}/api/v1/usuario/hospital/agenda/1/listar",
 							"host": [
 								"{{url}}"
 							],
@@ -426,8 +423,7 @@
 								"hospital",
 								"agenda",
 								"1",
-								"listar",
-								"1"
+								"listar"
 							]
 						}
 					},
@@ -683,32 +679,32 @@
 	],
 	"variable": [
 		{
-			"id": "f04107a1-0537-419a-809f-34be14c5d3bf",
+			"id": "c21ff392-ed62-4f5b-94a4-4ea0c7a83331",
 			"key": "token",
 			"value": "token"
 		},
 		{
-			"id": "9f946923-1471-4501-8c8a-9b0208f0d105",
+			"id": "d6ab00ab-3c38-4c5f-9446-5d1737e0a73d",
 			"key": "url",
 			"value": "http://localhost:8080"
 		},
 		{
-			"id": "a77f11ad-8c4e-4baa-be7f-f191f2d8cb4f",
+			"id": "7b2b37f7-1997-46ae-a861-64a3e1bee357",
 			"key": "email",
 			"value": ""
 		},
 		{
-			"id": "4d2f7d5a-b97e-4cba-aea4-438b4ec9c6aa",
+			"id": "d2e96143-ba67-4bb5-a640-787c71d38437",
 			"key": "password",
 			"value": ""
 		},
 		{
-			"id": "1eaf6244-c15a-4a01-b21a-0250f7a375b4",
+			"id": "9c828383-e0f1-4e0e-90d5-8c0160b40c3c",
 			"key": "cpf",
 			"value": ""
 		},
 		{
-			"id": "ea88ea10-4d3d-4fe3-92f3-cc25ef25af83",
+			"id": "daba06fb-af68-4118-9bc3-952934e1ec07",
 			"key": "especialidade",
 			"value": "0"
 		}

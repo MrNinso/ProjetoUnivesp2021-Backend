@@ -128,7 +128,7 @@ BEGIN
     INSERT INTO ESPECIALIDADES (ENOME) VALUES (nome);
 END;
 
--- Lista especialidades da pagina pageNum
+-- Lista especialidades
 
 CREATE PROCEDURE ProjetoUnivesp2021.ListarEspecialidades()
 BEGIN
@@ -146,9 +146,9 @@ BEGIN
     VALUES (nome, uf, cidade, cep, endereco, complemento, telefone, isProntoSocorro);
 END;
 
--- Lista Hospitais da pagina pageNum
+-- Lista Hospitais
 
-CREATE PROCEDURE ProjetoUnivesp2021.ListarHospitais(pageNum tinyint, pageSize tinyint)
+CREATE PROCEDURE ProjetoUnivesp2021.ListarHospitais()
 BEGIN
     SELECT HID, HNOME, HUF, HCIDADE, HCEP, HENDERECO, HCOMPLEMENTO, HTELEFONE, HISPRONTOSOCORRO
     FROM HOSPITAIS WHERE HATIVADO = 'T';
