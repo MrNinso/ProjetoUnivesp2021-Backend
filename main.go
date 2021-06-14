@@ -7,8 +7,9 @@ import (
 	"github.com/Nhanderu/brdoc"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	. "github.com/icza/gox/gox"
+	"github.com/icza/gox/timex"
 	jsoniter "github.com/json-iterator/go"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -28,7 +29,7 @@ func main() {
 	go iniciarValidate(v, &w)
 	go iniciarJson(&j, &w)
 
-	db, err := banco.NewMysqlConn(
+	db, err := banco.Driver{}.NewConn(
 		os.Getenv("DATABASE_HOST"),
 		os.Getenv("DATABASE_PORT"),
 		os.Getenv("DATABASE_USERNAME"),
@@ -36,9 +37,7 @@ func main() {
 		os.Getenv("DATABASE_NAME"),
 	)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	Pie(err)
 
 	w.Wait()
 
@@ -58,9 +57,8 @@ func main() {
 	}
 
 	w.Wait()
-	if err = app.Listen(port.String()); err != nil {
-		log.Fatal(err)
-	}
+
+	Pie(app.Listen(port.String()))
 }
 
 func iniciarJson(j *jsoniter.API, w *sync.WaitGroup) {
@@ -78,9 +76,7 @@ func iniciarJson(j *jsoniter.API, w *sync.WaitGroup) {
 }
 
 func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
-	var err error
-
-	if err = v.RegisterValidation("cpf", func(fl validator.FieldLevel) bool {
+	Pie(v.RegisterValidation("cpf", func(fl validator.FieldLevel) bool {
 		cpf := fl.Field().String()
 
 		if cpf == "" || len(cpf) != 11 {
@@ -88,11 +84,9 @@ func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
 		}
 
 		return brdoc.IsCPF(cpf)
-	}); err != nil {
-		panic(err)
-	}
+	}))
 
-	if err = v.RegisterValidation("cep", func(fl validator.FieldLevel) bool {
+	Pie(v.RegisterValidation("cep", func(fl validator.FieldLevel) bool {
 		cep := fl.Field().String()
 
 		if cep == "" || len(cep) != 8 {
@@ -106,11 +100,9 @@ func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
 			brdoc.PB, brdoc.PE, brdoc.PI, brdoc.PR, brdoc.RJ, brdoc.RN, brdoc.RO,
 			brdoc.RR, brdoc.RS, brdoc.SC, brdoc.SE, brdoc.SP, brdoc.TO,
 		)
-	}); err != nil {
-		panic(err)
-	}
+	}))
 
-	if err = v.RegisterValidation("uf", func(fl validator.FieldLevel) bool {
+	Pie(v.RegisterValidation("uf", func(fl validator.FieldLevel) bool {
 		uf := fl.Field().String()
 
 		if uf == "" || len(uf) != 2 {
@@ -118,17 +110,33 @@ func iniciarValidate(v *validator.Validate, w *sync.WaitGroup) {
 		}
 
 		return strings.Contains(constantes.Estados, uf)
-	}); err != nil {
-		panic(err)
-	}
+	}))
 
-	if err = v.RegisterValidation("unix", func(fl validator.FieldLevel) bool {
+	Pie(v.RegisterValidation("unix-futuro", func(fl validator.FieldLevel) bool {
 		unix := fl.Field().Int()
 
 		return time.Now().Unix() < unix //TODO ADD MARGEM
-	}); err != nil {
-		panic(err)
-	}
+	}))
+
+	Pie(v.RegisterValidation("unix-passado", func(fl validator.FieldLevel) bool {
+		unix := fl.Field().Int()
+
+		return time.Now().Unix() > unix //TODO ADD MARGEM
+	}))
+
+	Pie(v.RegisterValidation("idade", func(fl validator.FieldLevel) bool {
+		unix := time.Unix(fl.Field().Int(), 0)
+
+		idade, _, _, _, _, _ := timex.Diff(unix, time.Now())
+
+		return idade >= 18
+	}))
+
+	Pie(v.RegisterValidation("sexo", func(fl validator.FieldLevel) bool {
+		s := fl.Field().String()
+
+		return s == "M" || s == "F"
+	}))
 
 	w.Done()
 }
