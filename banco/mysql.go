@@ -1,3 +1,4 @@
+//+build mysql-driver
 package banco
 
 import (

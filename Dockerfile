@@ -4,7 +4,7 @@ WORKDIR /src
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o server.exe
+RUN CGO_ENABLED=0 go build -tags "mysql-driver" -o server.exe
 
 FROM scratch AS bin
 
