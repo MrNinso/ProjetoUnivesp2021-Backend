@@ -1,7 +1,7 @@
 package objetos
 
 type Hospital struct {
-	HID              int    `json:"hid"`
+	HID              uint   `json:"hid"`
 	HNOME            string `json:"nome" validate:"required"`
 	HUF              string `json:"uf" validate:"uf"`
 	HCIDADE          string `json:"cidade" validate:"required"`
