@@ -18,6 +18,24 @@ const (
 )
 
 func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validate, json *jsoniter.API) {
+	app.Get("/api/v1/convenios", func(ctx *fiber.Ctx) error {
+		return ctx.JSON(db.ListarConvenios())
+	})
+
+	app.Get("/api/v1/convenio/:cid/planos", func(ctx *fiber.Ctx) error {
+		cid, err := strconv.ParseUint(ctx.Params("cid"), 10, strconv.IntSize)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if cid < 0 {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		return ctx.JSON(db.ListarPlanosConvenio(uint(cid)))
+	})
+
 	app.Post("/api/v1/cadastrar/usuario", func(ctx *fiber.Ctx) error {
 		var r objetos.Usuario
 
@@ -99,7 +117,84 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.JSON(db.ListarHospitais())
 	})
 
-	apiUsuario.Get("/hospital/medicos/:eid", func(ctx *fiber.Ctx) error {
+	apiUsuario.Post("/favoritos/hospital/:hid/add", func(ctx *fiber.Ctx) error {
+		hid, err := strconv.ParseUint(ctx.Params("hid"), 10, strconv.IntSize)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if hid < 0 {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		token := ctx.Response().Header.Peek(TOKEN_HEADER)
+		if err := db.FavoritarHospital(string(token), uint(hid)); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiUsuario.Get("/favoritos/hospital", func(ctx *fiber.Ctx) error {
+		token := ctx.Response().Header.Peek(TOKEN_HEADER)
+		return ctx.JSON(db.ListarHospitaisFavoritos(string(token)))
+	})
+
+	apiUsuario.Get("/dependetes", func(ctx *fiber.Ctx) error {
+		token := ctx.Response().Header.Peek(TOKEN_HEADER)
+		return ctx.JSON(db.ListarDependentes(string(token)))
+	})
+
+	apiUsuario.Put("/dependete/add", func(ctx *fiber.Ctx) error {
+		var r objetos.Dependente
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		token := ctx.Response().Header.Peek(TOKEN_HEADER)
+		if err := db.AdicionarDependete(string(token), r); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiUsuario.Delete("/dependete/:did/del", func(ctx *fiber.Ctx) error {
+		did, err := strconv.ParseUint(ctx.Params("did"), 10, strconv.IntSize)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if did < 0 {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		token := ctx.Response().Header.Peek(TOKEN_HEADER)
+		if err := db.RemoverDependente(string(token), did); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiUsuario.Get("/hospital/:hid/especialidades", func(ctx *fiber.Ctx) error {
+		hid, err := strconv.ParseUint(ctx.Params("hid"), 10, strconv.IntSize)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if hid < 0 {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		return ctx.JSON(db.ListarEspecialidadesHospital(uint(hid)))
+	})
+
+	apiUsuario.Get("/hospital/:eid/medicos", func(ctx *fiber.Ctx) error {
 		eid, err := strconv.ParseUint(ctx.Params("eid"), 10, strconv.IntSize)
 
 		if err != nil {
@@ -113,7 +208,7 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.JSON(db.ListarMedicoPorEspecialiade(uint(eid)))
 	})
 
-	apiUsuario.Get("/hospital/agenda/:medico/listar", func(ctx *fiber.Ctx) error {
+	apiUsuario.Get("/hospital/:medico/agenda", func(ctx *fiber.Ctx) error {
 		mid, err := strconv.ParseUint(ctx.Params("medico"), 10, 64)
 
 		if err != nil {
@@ -127,8 +222,8 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		return ctx.JSON(db.ListarAgendamentosDoMedico(mid))
 	})
 
-	apiUsuario.Put("/hospital/agenda/:medico/add", func(ctx *fiber.Ctx) error {
-		token := ctx.Get(TOKEN_HEADER)
+	apiUsuario.Put("/hospital/:medico/agenda/add", func(ctx *fiber.Ctx) error {
+		token := ctx.Response().Header.Peek(TOKEN_HEADER)
 		mid, err := strconv.ParseUint(ctx.Params("medico"), 10, 64)
 
 		if err != nil {
@@ -140,18 +235,38 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		}
 
 		var r struct {
-			Data int64 `json:"data" validate:"unix"`
+			Data int64  `json:"data" validate:"unix-futuro,required"`
+			Did  uint64 `json:"did"`
 		}
 
 		if err = getRequest(v, *json, ctx, &r); err != nil {
 			return ctx.SendStatus(http.StatusBadRequest)
 		}
 
-		if err := db.MarcarConsulta(token, mid, time.Unix(r.Data, 0)); err != 0 {
+		if err := db.MarcarConsulta(string(token), r.Did, mid, time.Unix(r.Data, 0)); err != 0 {
 			return ctx.SendStatus(http.StatusConflict)
 		}
 
 		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiUsuario.Get("/agenda", func(ctx *fiber.Ctx) error {
+		token := ctx.Response().Header.Peek(TOKEN_HEADER)
+		return ctx.JSON(db.ListarAgendamentos(string(token)))
+	})
+
+	apiUsuario.Get("/convenio/:cpid/hospitais", func(ctx *fiber.Ctx) error {
+		cpid, err := strconv.ParseUint(ctx.Params("cpid"), 10, 64)
+
+		if err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if cpid < 0 {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		return ctx.JSON(db.ListarHospitaisPorPlanoConvenio(cpid))
 	})
 
 	apiAdministrativa := app.Group("/api/v1/adm", func(ctx *fiber.Ctx) error {
@@ -166,6 +281,40 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		}
 
 		if err := db.AdicionarHospital(r); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiAdministrativa.Put("/hospital/convenio/add", func(ctx *fiber.Ctx) error {
+		var r struct {
+			CPID uint64 `json:"cpid" validate:"required"`
+			HID  uint   `json:"hid" validate:"required"`
+		}
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.AdicionarConvenioHospital(r.CPID, r.HID); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiAdministrativa.Delete("/hospital/convenio/del", func(ctx *fiber.Ctx) error {
+		var r struct {
+			CPID uint64 `json:"cpid" validate:"required"`
+			HID  uint   `json:"hid" validate:"required"`
+		}
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.RemoverConvenioHospital(r.CPID, r.HID); err != 0 {
 			return ctx.SendStatus(http.StatusConflict)
 		}
 
@@ -196,6 +345,39 @@ func BuildRoutes(app *fiber.App, db banco.DriverBancoDados, v *validator.Validat
 		}
 
 		if err := db.AdicionarEspecialidade(r.Nome); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiAdministrativa.Put("/convenio/add", func(ctx *fiber.Ctx) error {
+		var r struct {
+			Nome string `json:"nome"`
+		}
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.AdicionarConvenio(r.Nome); err != 0 {
+			return ctx.SendStatus(http.StatusConflict)
+		}
+
+		return ctx.SendStatus(http.StatusOK)
+	})
+
+	apiAdministrativa.Put("/convenio/plano/add", func(ctx *fiber.Ctx) error {
+		var r struct {
+			Nome string `json:"nome" validate:"required"`
+			CID  uint64 `json:"cid" validate:"required"`
+		}
+
+		if err := getRequest(v, *json, ctx, &r); err != nil {
+			return ctx.SendStatus(http.StatusBadRequest)
+		}
+
+		if err := db.AdicionarPlanoConvenio(r.CID, r.Nome); err != 0 {
 			return ctx.SendStatus(http.StatusConflict)
 		}
 

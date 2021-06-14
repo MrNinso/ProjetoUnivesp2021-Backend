@@ -60,9 +60,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Realiza o cadastro\", function () {",
+									"pm.test(\"OK\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"})"
 								],
 								"type": "text/javascript"
 							}
@@ -122,6 +126,10 @@
 									"",
 									"pm.collectionVariables.set(\"email\", email);",
 									"pm.collectionVariables.set(\"password\", uuid);",
+									"pm.collectionVariables.set(\"sexo\", (Math.random() % 2 == 0) ? \"M\" : \"F\")",
+									"",
+									"var planos = JSON.parse(pm.collectionVariables.get(\"planos\"))",
+									"pm.collectionVariables.set(\"cpid\", planos[Math.floor(Math.random()*planos.length)].cpid)",
 									""
 								],
 								"type": "text/javascript"
@@ -133,7 +141,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nome\": \"{{$randomFullName}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"cpf\": \"{{cpf}}\",\n    \"uf\": \"SP\",\n    \"cidade\": \"são paulo\",\n    \"cep\": \"04014902\",\n    \"endereco\": \"{{$randomStreetAddress}}\",\n    \"complemento\": \"770/814\"\n}",
+							"raw": "{\n    \"nome\": \"{{$randomFullName}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"cpf\": \"{{cpf}}\",\n    \"nascimento\": 1023984871,\n    \"telefone\": 33368200,\n    \"sexo\": \"{{sexo}}\",\n    \"cpid\": {{cpid}}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -199,6 +207,105 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Listar Convenios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"})",
+									"",
+									"pm.test(\"atualiaza convenios\", function () {",
+									"    var body = pm.response.text()",
+									"",
+									"    pm.collectionVariables.set(\"convenios\", body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/v1/convenios",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"convenios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Planos de convenio",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"list = JSON.parse(pm.collectionVariables.get(\"convenios\"))",
+									"",
+									"var item = list[Math.floor(Math.random()*list.length)];",
+									"",
+									"pm.collectionVariables.set(\"cid\", item.cid)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"})",
+									"",
+									"pm.test(\"Atualiza planos\", function () {",
+									"    var planos = pm.response.text()",
+									"",
+									"    pm.collectionVariables.set(\"planos\", planos)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/v1/convenio/{{cid}}/planos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"convenio",
+								"{{cid}}",
+								"planos"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -219,6 +326,12 @@
 									"pm.test(\">200ms\", function () {",
 									"    pm.expect(pm.response.responseTime).to.be.below(200);",
 									"});",
+									"",
+									"pm.test(\"atualiza especialidades\", function () {",
+									"    var especialidades = pm.response.text()",
+									"",
+									"    pm.collectionVariables.set(\"especialidades\", especialidades)",
+									"})",
 									"",
 									"pm.test(\"atualiza token\", function() {",
 									"    var token = pm.response.headers.get(\"Token_api\") ",
@@ -280,7 +393,14 @@
 									"",
 									"     // Seta o token para as outras requests",
 									"    pm.collectionVariables.set(\"token\", token);",
-									"})"
+									"})",
+									"",
+									"pm.test(\"Atualiza lista hospital\", function () {",
+									"    var hospitais = pm.response.text()",
+									"",
+									"    pm.collectionVariables.set(\"hospitais\", hospitais)",
+									"})",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -316,7 +436,68 @@
 					"response": []
 				},
 				{
-					"name": "Listar Medicos Por especialiade",
+					"name": "Favoritar Hospital",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var hospitais = JSON.parse(pm.collectionVariables.get(\"hospitais\"))",
+									"",
+									"pm.collectionVariables.set(\"hid\", hospitais[Math.floor(Math.random()*hospitais.length)].hid)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"atualiza token\", function() {",
+									"    var token = pm.response.headers.get(\"Token_api\") ",
+									"",
+									"     // Seta o token para as outras requests",
+									"    pm.collectionVariables.set(\"token\", token);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/favoritos/hospital/{{hid}}/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"favoritos",
+								"hospital",
+								"{{hid}}",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Hospitais Favoritos",
 					"event": [
 						{
 							"listen": "test",
@@ -330,6 +511,264 @@
 									"    pm.expect(pm.response.responseTime).to.be.below(200);",
 									"});",
 									"",
+									"pm.test(\"atualiza token\", function() {",
+									"    var token = pm.response.headers.get(\"Token_api\") ",
+									"",
+									"     // Seta o token para as outras requests",
+									"    pm.collectionVariables.set(\"token\", token);",
+									"})",
+									"",
+									"pm.test(\"Atualiza lista hospital\", function () {",
+									"    var hospitais = pm.response.text()",
+									"",
+									"    pm.collectionVariables.set(\"hospitais\", hospitais)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/favoritos/hospital",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"favoritos",
+								"hospital"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Dependetes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"pm.test(\"atualiza token\", function() {",
+									"    var token = pm.response.headers.get(\"Token_api\") ",
+									"",
+									"     // Seta o token para as outras requests",
+									"    pm.collectionVariables.set(\"token\", token);",
+									"})",
+									"",
+									"pm.test(\"Atualiza lista dependentes\", function () {",
+									"    var dependentes = pm.response.text()",
+									"",
+									"    pm.collectionVariables.set(\"dependentes\", dependentes)",
+									"})",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/dependetes",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"dependetes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar Dependentes",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"sexo\", (Math.random() % 2 == 0) ? \"M\" : \"F\")"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"pm.test(\"atualiza token\", function() {",
+									"    var token = pm.response.headers.get(\"Token_api\") ",
+									"",
+									"     // Seta o token para as outras requests",
+									"    pm.collectionVariables.set(\"token\", token);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"{{$randomFullName}}\",\n    \"nascimento\": 1023984871,\n    \"sexo\": \"{{sexo}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/dependete/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"dependete",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deletar Dependentes",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var dependentes = JSON.parse(pm.collectionVariables.get(\"dependentes\"))",
+									"",
+									"pm.collectionVariables.set(\"did\", dependentes[Math.floor(Math.random()*dependentes.length)].did)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"pm.test(\"atualiza token\", function() {",
+									"    var token = pm.response.headers.get(\"Token_api\") ",
+									"",
+									"     // Seta o token para as outras requests",
+									"    pm.collectionVariables.set(\"token\", token);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							},
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/dependete/{{did}}/del",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"dependete",
+								"{{did}}",
+								"del"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Especialiades Hospital",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
 									"pm.test(\"atualiza token\", function() {",
 									"    var token = pm.response.headers.get(\"Token_api\") ",
 									"",
@@ -356,7 +795,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/api/v1/usuario/hospital/medicos",
+							"raw": "{{url}}/api/v1/usuario/hospital/{{hid}}/especialidades",
 							"host": [
 								"{{url}}"
 							],
@@ -365,6 +804,75 @@
 								"v1",
 								"usuario",
 								"hospital",
+								"{{hid}}",
+								"especialidades"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Medicos Por especialiade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"pm.test(\"atualiza token\", function() {",
+									"    var token = pm.response.headers.get(\"Token_api\") ",
+									"",
+									"     // Seta o token para as outras requests",
+									"    pm.collectionVariables.set(\"token\", token);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var especialidades = JSON.parse(pm.collectionVariables.get(\"especialidades\"))",
+									"",
+									"pm.collectionVariables.set(\"eid\", especialidades[Math.floor(Math.random()*especialidades.length)].eid)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/v1/usuario/hospital/{{eid}}/medicos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"usuario",
+								"hospital",
+								"{{eid}}",
 								"medicos"
 							]
 						}
@@ -412,7 +920,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/api/v1/usuario/hospital/agenda/1/listar",
+							"raw": "{{url}}/api/v1/usuario/hospital/1/agenda",
 							"host": [
 								"{{url}}"
 							],
@@ -421,9 +929,8 @@
 								"v1",
 								"usuario",
 								"hospital",
-								"agenda",
 								"1",
-								"listar"
+								"agenda"
 							]
 						}
 					},
@@ -471,7 +978,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"data\": 1679427696\n}",
+							"raw": "{\n    \"data\": 1679427696,\n    \"did\": 0\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -479,7 +986,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/api/v1/usuario/hospital/agenda/1/add",
+							"raw": "{{url}}/api/v1/usuario/hospital/1/agenda/add",
 							"host": [
 								"{{url}}"
 							],
@@ -488,8 +995,8 @@
 								"v1",
 								"usuario",
 								"hospital",
-								"agenda",
 								"1",
+								"agenda",
 								"add"
 							]
 						}
@@ -514,7 +1021,18 @@
 									"",
 									"pm.test(\">200ms\", function () {",
 									"    pm.expect(pm.response.responseTime).to.be.below(200);",
-									"});"
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -525,7 +1043,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Hospital {{$randomFirstName}}\",\n    \"uf\": \"SP\",\n    \"cidade\": \"Franco da Rocha\",\n    \"cep\": \"48003174\",\n    \"endereco\": \"{{$randomStreetAddress}}\",\n    \"complemento\": null,\n    \"telefone\": 33368200,\n    \"isProntoSocorro\": true\n}",
+							"raw": "{\n    \"nome\": \"Hospital {{$randomFullName}}\",\n    \"uf\": \"SP\",\n    \"cidade\": \"Franco da Rocha\",\n    \"cep\": \"48003174\",\n    \"endereco\": \"{{$randomStreetAddress}}\",\n    \"complemento\": null,\n    \"telefone\": 33368200,\n    \"isProntoSocorro\": true\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -549,6 +1067,95 @@
 					"response": []
 				},
 				{
+					"name": "Cadastrar Plano Convenio no Hospital",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var hospitais = JSON.parse(pm.collectionVariables.get(\"hospitais\"))",
+									"var planos = JSON.parse(pm.collectionVariables.get(\"planos\"))",
+									"",
+									"pm.collectionVariables.set(\"hid\", hospitais[Math.floor(Math.random()*hospitais.length)].hid)",
+									"pm.collectionVariables.set(\"cpid\", planos[Math.floor(Math.random()*planos.length)].cpid)",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token_api",
+								"value": "{{token}}",
+								"type": "text"
+							},
+							{
+								"key": "email_api",
+								"value": "{{email}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cpid\": {{cpid}},\n    \"hid\": {{hid}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/adm/hospital/convenio/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"adm",
+								"hospital",
+								"convenio",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DEletar Plano Convenio no Hospital",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cpid\": {{cpid}},\n    \"hid\": {{hid}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/adm/hospital/convenio/del",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"adm",
+								"hospital",
+								"convenio",
+								"del"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Cadastrar Medico",
 					"event": [
 						{
@@ -565,6 +1172,19 @@
 								],
 								"type": "text/javascript"
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var hospitais = JSON.parse(pm.collectionVariables.get(\"hospitais\"))",
+									"var especialidades = JSON.parse(pm.collectionVariables.get(\"especialidades\"))",
+									"",
+									"pm.collectionVariables.set(\"hid\", hospitais[Math.floor(Math.random()*hospitais.length)].hid)",
+									"pm.collectionVariables.set(\"eid\", especialidades[Math.floor(Math.random()*especialidades.length)].eid)"
+								],
+								"type": "text/javascript"
+							}
 						}
 					],
 					"request": {
@@ -572,7 +1192,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nome\": \"Dr. {{$randomFullName}}\",\n    \"eid\": 1,\n    \"hid\": 1\n}",
+							"raw": "{\n    \"nome\": \"Dr. {{$randomFullName}}\",\n    \"eid\": {{eid}},\n    \"hid\": {{hid}}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -653,6 +1273,138 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Cadastrar Convenio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"pm.test(\"Cria mais convenios\", function () {",
+									"    var url = pm.collectionVariables.get(\"url\")",
+									"",
+									"    for (let i = 1; i < 20; i++) {",
+									"        pm.sendRequest({",
+									"            url: `${url}/api/v1/adm/convenio/add`,",
+									"            method: 'PUT',",
+									"            body: {",
+									"                mode: 'raw',",
+									"                raw: JSON.stringify({nome: `${i} Saude`})",
+									"            }",
+									"        }, function (err, response) {",
+									"            pm.expect(response.status).to.be.equal(\"OK\")",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"0 Saude\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/adm/convenio/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"adm",
+								"convenio",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar Planos de Saude",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\">200ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(200);",
+									"});",
+									"",
+									"pm.test(\"Cria mais planos\", function () {",
+									"    var url = pm.collectionVariables.get(\"url\")",
+									"    var convenios = JSON.parse(pm.collectionVariables.get(\"convenios\"))",
+									"",
+									"    convenios.forEach((plano) => {",
+									"        for (let i = 1; i < 20; i++) {",
+									"            pm.sendRequest({",
+									"                url: `${url}/api/v1/adm/convenio/plano/add`,",
+									"                method: 'PUT',",
+									"                body: {",
+									"                    mode: 'raw',",
+									"                    raw: JSON.stringify({nome: `Plano ${i}`, cid: plano.cid})",
+									"                }",
+									"            }, function (err, response) {",
+									"                pm.expect(response.status).to.be.equal(\"OK\")",
+									"            });",
+									"        }",
+									"    })",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Plano 0\",\n    \"cid\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/v1/adm/convenio/plano/add",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"adm",
+								"convenio",
+								"plano",
+								"add"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -679,34 +1431,72 @@
 	],
 	"variable": [
 		{
-			"id": "c21ff392-ed62-4f5b-94a4-4ea0c7a83331",
 			"key": "token",
 			"value": "token"
 		},
 		{
-			"id": "d6ab00ab-3c38-4c5f-9446-5d1737e0a73d",
 			"key": "url",
 			"value": "http://localhost:8080"
 		},
 		{
-			"id": "7b2b37f7-1997-46ae-a861-64a3e1bee357",
 			"key": "email",
 			"value": ""
 		},
 		{
-			"id": "d2e96143-ba67-4bb5-a640-787c71d38437",
 			"key": "password",
 			"value": ""
 		},
 		{
-			"id": "9c828383-e0f1-4e0e-90d5-8c0160b40c3c",
 			"key": "cpf",
 			"value": ""
 		},
 		{
-			"id": "daba06fb-af68-4118-9bc3-952934e1ec07",
 			"key": "especialidade",
 			"value": "0"
+		},
+		{
+			"key": "cid",
+			"value": ""
+		},
+		{
+			"key": "sexo",
+			"value": ""
+		},
+		{
+			"key": "convenios",
+			"value": ""
+		},
+		{
+			"key": "planos",
+			"value": ""
+		},
+		{
+			"key": "cpid",
+			"value": ""
+		},
+		{
+			"key": "hid",
+			"value": ""
+		},
+		{
+			"key": "hospitais",
+			"value": ""
+		},
+		{
+			"key": "did",
+			"value": ""
+		},
+		{
+			"key": "especialidades",
+			"value": ""
+		},
+		{
+			"key": "eid",
+			"value": ""
+		},
+		{
+			"key": "dependentes",
+			"value": ""
 		}
 	]
 }
